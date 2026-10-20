@@ -367,6 +367,7 @@ class MDM(nn.Module):
 @click.option("--n_head", default=6, help="Number of heads")
 @click.option("--ff_expand", default=4, help="FF expand")
 @click.option("--sequence_length", default=1024, help="Sequence length")
+@click.option("--seed", default=42, type=int, help="Random seed for reproducibility")
 @click.option("--tags", default="", help="Tags for the run")
 @click.option("--lr_wtexweight", default=1.0, type=float)
 @click.option("--lr_attnxc_qxweight", default=1.0, type=float)
@@ -410,6 +411,7 @@ def train(
     n_head,
     ff_expand,
     sequence_length,
+    seed,
     tags,
     lr_wtexweight: float,
     lr_attnxc_qxweight: float,
@@ -454,9 +456,9 @@ def train(
         log_gpu_memory()
 
     # fix all the seed
-    torch.manual_seed(42)
-    np.random.seed(42)
-    random.seed(42)
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
 
     grad_accum_steps = int(global_batch_size // (per_gpu_batch_size * ddp_world_size))
 
