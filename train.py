@@ -359,6 +359,7 @@ class MDM(nn.Module):
 @click.option("--warmup_iters", default=100, help="Warmup iterations")
 @click.option("--warmdown_iters", default="10%", help="Warmdown iterations")
 @click.option("--val_every", default=100, help="Validation frequency")
+@click.option("--log_every", default=1, help="Log metrics every N training steps")
 @click.option("--save_every", default=4000, help="Checkpoint save frequency")
 @click.option("--n_embed", default=768, help="Embedding dimension")
 @click.option("--init_ckpt", default=None, help="Path to initial checkpoint")
@@ -404,6 +405,7 @@ def train(
     warmdown_iters,
     val_every,
     save_every,
+    log_every,
     n_embed,
     init_ckpt,
     vres,
@@ -678,7 +680,7 @@ def train(
         optimizer.zero_grad()
         scheduler.step()
 
-        if master_process:
+        if master_process and (step % log_every == 0 or step == num_iterations - 1):
             lr = scheduler.get_last_lr()[0]
             tokens_per_sec = tokens_processed / (time.time() - t_start)
             logging.info(
