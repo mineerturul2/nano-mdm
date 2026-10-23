@@ -390,6 +390,8 @@ class MDM(nn.Module):
 @click.option("--initstd_lm_headxweight", default=1.0, type=float)
 @click.option("--initstd_lamb1", default=0.5, type=float)
 @click.option("--initstd_lamb2", default=0.5, type=float)
+@click.option("--grad_clip", default=1.0, type=float,
+              help="Gradient norm clipping threshold (0 = disable)")
 @click.option("--do_compile", default=False, type=bool)
 def train(
     run_name,
@@ -435,6 +437,7 @@ def train(
     initstd_lm_headxweight: float,
     initstd_lamb1: float,
     initstd_lamb2: float,
+    grad_clip: float,
     do_compile: bool,
 ):
     dist.init_process_group(backend="nccl")
@@ -676,6 +679,10 @@ def train(
             # Get next batch for the next iteration
             x, y = train_loader.next_batch()
 
+        if grad_clip > 0.0:
+            total_norm = torch.nn.utils.clip_grad_norm_(
+                model.parameters(), grad_clip
+            )
         optimizer.step()
         optimizer.zero_grad()
         scheduler.step()
